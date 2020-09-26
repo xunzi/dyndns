@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -103,6 +104,10 @@ func hetzerFetchZoneID(domainname string) string {
 	debugPrint(req.URL.String())
 	resp, err := client.Do(req)
 	checkError(err)
+	debugPrint(resp.Status)
+	if resp.StatusCode != 200 {
+		log.Fatalf("Request for %s returned %s", q.Encode(), resp.Status)
+	}
 	b, err := ioutil.ReadAll(resp.Body)
 	resp.Body.Close()
 	checkError(err)
@@ -115,6 +120,75 @@ func hetzerFetchZoneID(domainname string) string {
 func splitDomainName(hostname string) []string {
 	splitName := strings.SplitN(hostname, ".", 2)
 	return splitName
+}
+
+func hetzerFetchRecordID(hostname string, zoneid string) string {
+	client := &http.Client{}
+	type resultMap struct {
+		Records []struct {
+			ID       string `json:"id"`
+			Type     string `json:"type"`
+			Name     string `json:"name"`
+			Value    string `json:"value"`
+			TTL      int    `json:"ttl,omitempty"`
+			ZoneID   string `json:"zone_id"`
+			Created  string `json:"created"`
+			Modified string `json:"modified"`
+		} `json:"records"`
+	}
+	req, err := http.NewRequest("GET", fmt.Sprintf("%s/records", HetznerDnsAPI), nil)
+	checkError(err)
+	req.Header.Set("Auth-API-Token", ApiToken)
+	req.Header.Add("Accept", "application/json")
+	q := req.URL.Query()
+	q.Add("zone_id", zoneid)
+	req.URL.RawQuery = q.Encode()
+	debugPrint(req.URL.String())
+	resp, err := client.Do(req)
+	checkError(err)
+	b, err := ioutil.ReadAll(resp.Body)
+	resp.Body.Close()
+	checkError(err)
+	//debugPrint(string(b))
+	var recordResult resultMap
+	json.Unmarshal(b, &recordResult)
+	for _, record := range recordResult.Records {
+		if record.Name == hostname && record.Type == "A" {
+			return record.ID
+		}
+	}
+	return ""
+}
+
+func hetznerUpdateDNSRecord(recordid string, name string, ip string, zoneid string) {
+	client := &http.Client{}
+	type updateRecord struct {
+		Zone_id string
+		Name    string
+		Type    string
+		Value   string
+	}
+	newRecord := updateRecord{
+		Zone_id: zoneid,
+		Name:    name,
+		Type:    "A",
+		Value:   ip,
+	}
+	var jsonData []byte
+	jsonData, err := json.Marshal(newRecord)
+	checkError(err)
+	body := bytes.NewBuffer(jsonData)
+	req, err := http.NewRequest("PUT", fmt.Sprintf("%s/records/%s", HetznerDnsAPI, recordid), body)
+	checkError(err)
+	req.Header.Set("Auth-API-Token", ApiToken)
+	req.Header.Add("Accept", "application/json")
+	resp, err := client.Do(req)
+	checkError(err)
+	if resp.StatusCode != 200 {
+		log.Fatalf("Request for %s returned status %s", req.URL, resp.Status)
+	}
+	debugPrint(fmt.Sprintf("DNS entry update request returned status %s", resp.Status))
+
 }
 
 func main() {
@@ -137,4 +211,7 @@ func main() {
 	debugPrint(domain)
 	zoneID := hetzerFetchZoneID(domain)
 	debugPrint(fmt.Sprintf("Zoneid for zone %s is %s", domain, zoneID))
+	recordID := hetzerFetchRecordID(hostPart, zoneID)
+	debugPrint(fmt.Sprintf("DNS entry %s in zone %s has record id %s", hostPart, domain, recordID))
+	hetznerUpdateDNSRecord(recordID, hostPart, myIP, zoneID)
 }
