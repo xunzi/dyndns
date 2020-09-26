@@ -21,3 +21,17 @@ func TestLookupHost(t *testing.T) {
 		t.Errorf("Got %s, expected %s for host %s", testIP, expectedIP, testHostName)
 	}
 }
+
+func TestSplitDomainName(t *testing.T) {
+	testHostName := "www.drexler-online.net"
+	expectedDomain := "drexler-online.net"
+	expectedHostName := "www"
+	hostName := splitDomainName(testHostName)[0]
+	domain := splitDomainName(testHostName)[1]
+	if domain != expectedDomain {
+		t.Errorf("Got %s, expected %s", domain, expectedDomain)
+	}
+	if hostName != expectedHostName {
+		t.Errorf("Got %s, expected %s", hostName, expectedHostName)
+	}
+}
