@@ -117,6 +117,12 @@ func hetzerFetchZoneID(domainname string) string {
 	return zoneResult.Zones[0].ID
 }
 
+func checkHTTPStatus(status int, statuscode string)  {
+	if status != 200 {
+		log.Fatalf("Http status code is %s", statuscode)
+	}
+}
+
 func splitDomainName(hostname string) []string {
 	splitName := strings.SplitN(hostname, ".", 2)
 	return splitName
@@ -193,6 +199,9 @@ func hetznerUpdateDNSRecord(recordid string, name string, ip string, zoneid stri
 
 func main() {
 	flag.Parse()
+	if *targetname == "" {
+		log.Fatal("Please supply a targetname as argument")
+		}
 	myIP := fetchIP(*srcurl)
 	debugPrint(fmt.Sprintf("My public ip is %s", myIP))
 	hostIP := lookupHost(*targetname)
