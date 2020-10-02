@@ -18,8 +18,8 @@ var token = flag.String("token", "", "token to authenticate against the dns upda
 var debug = flag.Bool("debug", false, "show debugging output")
 var targetname = flag.String("target", "", "DNS A record to be updated")
 
-var HetznerDnsAPI = "https://dns.hetzner.com/api/v1"
-var ApiToken = os.Getenv("DNSTOKEN")
+var hetznerDNSAPI = "https://dns.hetzner.com/api/v1"
+var apiToken = os.Getenv("DNSTOKEN")
 
 func debugPrint(msg string) {
 	if *debug == true {
@@ -94,9 +94,9 @@ func hetzerFetchZoneID(domainname string) string {
 			} `json:"pagination"`
 		} `json:"meta"`
 	}
-	req, err := http.NewRequest("GET", fmt.Sprintf("%s/zones", HetznerDnsAPI), nil)
+	req, err := http.NewRequest("GET", fmt.Sprintf("%s/zones", hetznerDNSAPI), nil)
 	checkError(err)
-	req.Header.Set("Auth-API-Token", ApiToken)
+	req.Header.Set("Auth-API-Token", apiToken)
 	req.Header.Add("Accept", "application/json")
 	q := req.URL.Query()
 	q.Add("search_name", domainname)
@@ -136,9 +136,9 @@ func hetzerFetchRecordID(hostname string, zoneid string) string {
 			Modified string `json:"modified"`
 		} `json:"records"`
 	}
-	req, err := http.NewRequest("GET", fmt.Sprintf("%s/records", HetznerDnsAPI), nil)
+	req, err := http.NewRequest("GET", fmt.Sprintf("%s/records", hetznerDNSAPI), nil)
 	checkError(err)
-	req.Header.Set("Auth-API-Token", ApiToken)
+	req.Header.Set("Auth-API-Token", apiToken)
 	req.Header.Add("Accept", "application/json")
 	q := req.URL.Query()
 	q.Add("zone_id", zoneid)
@@ -163,24 +163,24 @@ func hetzerFetchRecordID(hostname string, zoneid string) string {
 func hetznerUpdateDNSRecord(recordid string, name string, ip string, zoneid string) {
 	client := &http.Client{}
 	type updateRecord struct {
-		Zone_id string
-		Name    string
-		Type    string
-		Value   string
+		ZoneID string
+		Name   string
+		Type   string
+		Value  string
 	}
 	newRecord := updateRecord{
-		Zone_id: zoneid,
-		Name:    name,
-		Type:    "A",
-		Value:   ip,
+		ZoneID: zoneid,
+		Name:   name,
+		Type:   "A",
+		Value:  ip,
 	}
 	var jsonData []byte
 	jsonData, err := json.Marshal(newRecord)
 	checkError(err)
 	body := bytes.NewBuffer(jsonData)
-	req, err := http.NewRequest("PUT", fmt.Sprintf("%s/records/%s", HetznerDnsAPI, recordid), body)
+	req, err := http.NewRequest("PUT", fmt.Sprintf("%s/records/%s", hetznerDNSAPI, recordid), body)
 	checkError(err)
-	req.Header.Set("Auth-API-Token", ApiToken)
+	req.Header.Set("Auth-API-Token", apiToken)
 	req.Header.Add("Accept", "application/json")
 	resp, err := client.Do(req)
 	checkError(err)
@@ -202,7 +202,7 @@ func main() {
 		os.Exit(0)
 	}
 
-	if ApiToken == "" {
+	if apiToken == "" {
 		log.Fatal("Please supply a valid API token as environment var DNSTOKEN, e.g. export DNSTOKEN=123456xyz")
 	}
 	hostPart := splitDomainName(*targetname)[0]
