@@ -17,6 +17,7 @@ var srcurl = flag.String("srcurl", "", "url that supplies the current ip")
 var token = flag.String("token", "", "token to authenticate against the dns update api")
 var debug = flag.Bool("debug", false, "show debugging output")
 var targetname = flag.String("target", "", "DNS A record to be updated")
+var configfile = flag.String("configfile", "config.json", "Config file")
 
 var hetznerDNSAPI = "https://dns.hetzner.com/api/v1"
 var apiToken = os.Getenv("DNSTOKEN")
@@ -39,6 +40,7 @@ func fetchIP(url string) string {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	checkError(err)
+	checkHTTPStatus(resp, 200)
 	b, err := ioutil.ReadAll(resp.Body)
 	resp.Body.Close()
 	checkError(err)
@@ -104,10 +106,8 @@ func hetzerFetchZoneID(domainname string) string {
 	debugPrint(req.URL.String())
 	resp, err := client.Do(req)
 	checkError(err)
-	debugPrint(resp.Status)
-	if resp.StatusCode != 200 {
-		log.Fatalf("Request for %s returned %s", q.Encode(), resp.Status)
-	}
+	//debugPrint(resp.Status)
+	checkHTTPStatus(resp, 200)
 	b, err := ioutil.ReadAll(resp.Body)
 	resp.Body.Close()
 	checkError(err)
@@ -117,9 +117,9 @@ func hetzerFetchZoneID(domainname string) string {
 	return zoneResult.Zones[0].ID
 }
 
-func checkHTTPStatus(status int, statuscode string)  {
-	if status != 200 {
-		log.Fatalf("Http status code is %s", statuscode)
+func checkHTTPStatus(resp *http.Response, expected_status int)  {
+	if resp.StatusCode != expected_status {
+		log.Fatalf("Http status code is %s, expected %d", resp.Status, expected_status)
 	}
 }
 
@@ -152,6 +152,7 @@ func hetzerFetchRecordID(hostname string, zoneid string) string {
 	debugPrint(req.URL.String())
 	resp, err := client.Do(req)
 	checkError(err)
+	checkHTTPStatus(resp, 200)
 	b, err := ioutil.ReadAll(resp.Body)
 	resp.Body.Close()
 	checkError(err)
