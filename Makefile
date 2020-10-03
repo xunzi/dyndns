@@ -1,4 +1,4 @@
 test:
-	cd src ; go test -v
+	cd client ; go test -v
 build: test
-	go build -o bin/dyndns src/dyndns.go
+	go build -o bin/dyndns client/dyndns.go
