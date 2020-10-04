@@ -1,13 +1,54 @@
 package dyndns
 
-import "testing"
+import (
+	"fmt"
+	"net/http"
+	"net/http/httptest"
+	"math/rand"
+	"strings"
+	"testing"
+	"time"
+)
+
+
+const (
+	Alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	Numerals = "0123456789"
+)
+
+
+func StartTestServer(retval string) *httptest.Server {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprint(w, retval)
+	}))
+
+	return ts
+}
+
+func GenerateRandomString(length int) string {
+	pool := Alphabet + Numerals
+	rand.Seed(time.Now().UnixNano())
+	var ret []string
+	//fmt.Print(pool)
+	i := 0
+	for ; i < length; i += 1 {
+		rnum := rand.Intn(len(pool))
+		rchar := pool[rnum]
+		//fmt.Printf("%d: %s\n", rnum, string(rchar))
+		ret = append(ret, string(rchar))
+		}
+	return strings.Join(ret, "")
+}
 
 func TestFetchIP(t *testing.T) {
-	testURL := "https://www.drexler-online.net/testmyip"
+	randString := GenerateRandomString(12)
+	ts := StartTestServer(randString)
+	defer ts.Close()
+	testURL := ts.URL
 	myIP := fetchIP(testURL)
 	t.Logf("Got ip %s from %s", myIP, testURL)
-	testIP := "10.10.10.10"
-	if myIP != "10.10.10.10" {
+	testIP := randString
+	if myIP != randString {
 		t.Errorf("Testing ip wrong: got %s, expected: %s", myIP, testIP)
 	}
 }
