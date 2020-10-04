@@ -58,3 +58,9 @@ type RecordresultMap struct {
 }
 
 
+type UpdateRecord struct {
+	ZoneID string
+	Name   string
+	Type   string
+	Value  string
+}

@@ -118,13 +118,7 @@ func hetzerFetchRecordID(hostname string, zoneid string) string {
 
 func hetznerUpdateDNSRecord(recordid string, name string, ip string, zoneid string) {
 	client := &http.Client{}
-	type updateRecord struct {
-		ZoneID string
-		Name   string
-		Type   string
-		Value  string
-	}
-	newRecord := updateRecord{
+	newRecord := structs.UpdateRecord{
 		ZoneID: zoneid,
 		Name:   name,
 		Type:   "A",
