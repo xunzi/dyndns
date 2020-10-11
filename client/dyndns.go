@@ -55,7 +55,7 @@ func lookupHost(hostname string) string {
 	return hostIP[0]
 }
 
-func hetzerFetchZoneID(domainname string) string {
+func hetznerFetchZoneID(domainname string) string {
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", fmt.Sprintf("%s/zones", hetznerDNSAPI), nil)
 	checkError(err)
@@ -89,7 +89,7 @@ func splitDomainName(hostname string) []string {
 	return splitName
 }
 
-func hetzerFetchRecordID(hostname string, zoneid string) string {
+func hetznerFetchRecordID(hostname string, zoneid string) string {
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", fmt.Sprintf("%s/records", hetznerDNSAPI), nil)
 	checkError(err)
@@ -162,9 +162,9 @@ func main() {
 	domain := splitDomainName(*targetname)[1]
 	debugPrint(hostPart)
 	debugPrint(domain)
-	zoneID := hetzerFetchZoneID(domain)
+	zoneID := hetznerFetchZoneID(domain)
 	debugPrint(fmt.Sprintf("Zoneid for zone %s is %s", domain, zoneID))
-	recordID := hetzerFetchRecordID(hostPart, zoneID)
+	recordID := hetznerFetchRecordID(hostPart, zoneID)
 	debugPrint(fmt.Sprintf("DNS entry %s in zone %s has record id %s", hostPart, domain, recordID))
 	hetznerUpdateDNSRecord(recordID, hostPart, myIP, zoneID)
 }
