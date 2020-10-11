@@ -2,20 +2,18 @@ package dyndns
 
 import (
 	"fmt"
+	"math/rand"
 	"net/http"
 	"net/http/httptest"
-	"math/rand"
 	"strings"
 	"testing"
 	"time"
 )
 
-
 const (
 	Alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	Numerals = "0123456789"
 )
-
 
 func StartTestServer(retval string) *httptest.Server {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -31,12 +29,12 @@ func GenerateRandomString(length int) string {
 	var ret []string
 	//fmt.Print(pool)
 	i := 0
-	for ; i < length; i += 1 {
+	for ; i < length; i++ {
 		rnum := rand.Intn(len(pool))
 		rchar := pool[rnum]
 		//fmt.Printf("%d: %s\n", rnum, string(rchar))
 		ret = append(ret, string(rchar))
-		}
+	}
 	return strings.Join(ret, "")
 }
 

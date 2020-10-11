@@ -78,9 +78,9 @@ func hetzerFetchZoneID(domainname string) string {
 	return zoneResult.Zones[0].ID
 }
 
-func checkHTTPStatus(resp *http.Response, expected_status int) {
-	if resp.StatusCode != expected_status {
-		log.Fatalf("Http status code is %s, expected %d", resp.Status, expected_status)
+func checkHTTPStatus(resp *http.Response, expectedStatus int) {
+	if resp.StatusCode != expectedStatus {
+		log.Fatalf("Http status code is %s, expected %d", resp.Status, expectedStatus)
 	}
 }
 
