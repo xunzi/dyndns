@@ -1,8 +1,8 @@
-package dyndns
+package main
 
 import (
 	"bytes"
-	"dyndns/structs"
+	"github.com/xunzi/dyndns/internal"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -18,7 +18,7 @@ var srcurl = flag.String("srcurl", "", "url that supplies the current ip")
 var token = flag.String("token", "", "token to authenticate against the dns update api")
 var debug = flag.Bool("debug", false, "show debugging output")
 var targetname = flag.String("target", "", "DNS A record to be updated")
-var configfile = flag.String("configfile", "config.json", "Config file")
+//var configfile = flag.String("configfile", "config.json", "Config file")
 
 const hetznerDNSAPI = "https://dns.hetzner.com/api/v1"
 
