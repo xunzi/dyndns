@@ -42,6 +42,7 @@ func GenerateRandomString(length int) string {
 
 func TestFetchIP(t *testing.T) {
 	randString := GenerateRandomString(12)
+	t.Logf("Expected string: %s", randString)
 	ts := StartTestServer(randString)
 	defer ts.Close()
 	testURL := ts.URL
@@ -52,6 +53,7 @@ func TestFetchIP(t *testing.T) {
 		t.Errorf("Testing ip wrong: got %s, expected: %s", myIP, testIP)
 	}
 }
+
 
 func TestLookupHost(t *testing.T) {
 	testHostName := "www.drexler-online.net"
